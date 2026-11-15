@@ -1037,3 +1037,244 @@ textarea.form-control {
     width: 100%;
   }
 }
+
+@page {
+  size: A4;
+  margin: 1.5cm;
+}
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  html,
+  body {
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    color: #1E1E24 !important;
+    font-size: 10pt !important;
+    line-height: 1.45 !important;
+    min-height: auto !important;
+    display: block !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .navbar,
+  .navbar-inner,
+  .navbar-menu,
+  .nav-toggle,
+  .btn,
+  button,
+  #editProfileBtn,
+  #presentationModeBtn,
+  #printPdfBtn,
+  svg.lucide,
+  [data-lucide],
+  .modal-backdrop,
+  .modal-window,
+  #editProfileModal,
+  #previewModal,
+  #editCategoryModal,
+  #uploadModal,
+  .toast,
+  .toolbar,
+  #confirmBanner,
+  .footer {
+    display: none !important;
+  }
+
+  #portfolioMain .page-header:first-of-type,
+  .main-content .container > .page-header:first-child {
+    display: block !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+    border-bottom: 2px solid #92140C !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  #profileInstitution {
+    display: inline-block !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #92140C !important;
+    color: #92140C !important;
+    font-size: 8.5pt !important;
+    font-weight: 600 !important;
+    padding: 2px 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  #profileName {
+    font-size: 20pt !important;
+    font-weight: 800 !important;
+    color: #1E1E24 !important;
+    margin: 0 0 4px 0 !important;
+  }
+
+  #profileBio {
+    font-size: 9.5pt !important;
+    color: #57534E !important;
+    margin: 0 !important;
+  }
+
+  #portfolioMain .bento-grid:first-of-type,
+  .main-content .container > .bento-grid:first-of-type,
+  .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 22px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  #portfolioMain .bento-grid:first-of-type .bento-card,
+  .main-content .container > .bento-grid:first-of-type .bento-card,
+  .stats-grid .stat-card {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    border: 1px solid #D6D3D1 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    gap: 6px !important;
+    transform: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .stat-value {
+    font-size: 16pt !important;
+    font-weight: 800 !important;
+    color: #1E1E24 !important;
+    line-height: 1.15 !important;
+  }
+
+  .stat-label {
+    font-size: 8pt !important;
+    color: #57534E !important;
+    margin-top: 2px !important;
+    opacity: 1 !important;
+  }
+
+  .page-header + .page-header {
+    display: block !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 14px !important;
+    border-bottom: 1px solid #D6D3D1 !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  .page-header + .page-header h2 {
+    font-size: 12pt !important;
+    color: #1E1E24 !important;
+  }
+
+  #showcaseGrid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  #showcaseGrid .bento-card,
+  .bento-card {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+    background-color: #FFFFFF !important;
+    background: #FFFFFF !important;
+    border: 1px solid #D6D3D1 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    gap: 10px !important;
+    transform: none !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  #showcaseGrid .bento-card-header,
+  .bento-card-header {
+    margin-bottom: 2px !important;
+  }
+
+  .badge-apricot {
+    background-color: #FFFFFF !important;
+    border: 1px solid #92140C !important;
+    color: #92140C !important;
+    font-size: 7.5pt !important;
+    padding: 2px 8px !important;
+  }
+
+  .bento-card-date {
+    font-size: 8pt !important;
+    color: #57534E !important;
+  }
+
+  #showcaseGrid .bento-card-preview,
+  .bento-card-preview {
+    height: 110px !important;
+    min-height: 0 !important;
+    padding: 8px !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+  }
+
+  #showcaseGrid .bento-card-preview img,
+  .bento-card-preview img {
+    max-height: 94px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+  }
+
+  #showcaseGrid .bento-card-preview span {
+    font-size: 8pt !important;
+    color: #1E1E24 !important;
+    word-break: break-all !important;
+  }
+
+  .bento-card-title {
+    font-size: 10pt !important;
+    font-weight: 700 !important;
+    color: #1E1E24 !important;
+  }
+
+  .bento-card-desc {
+    font-size: 8.5pt !important;
+    color: #57534E !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    overflow: visible !important;
+  }
+
+  .empty-state {
+    background-color: #FFFFFF !important;
+    border: 1px solid #D6D3D1 !important;
+    padding: 24px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
