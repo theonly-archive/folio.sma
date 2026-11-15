@@ -1,6 +1,13 @@
 const DB_NAME = 'FolioSmasaDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'dokumen';
+const PROFILE_STORAGE_KEY = 'folio_smasa_profile';
+
+const DEFAULT_PROFILE = {
+  nama: 'Nama Pelajar',
+  instansi: 'SMA Negeri 1 Madiun',
+  bio: 'Arsip portofolio dan rekam prestasi pelajar'
+};
 
 let dbInstance = null;
 let selectedUploadFile = null;
@@ -9,6 +16,33 @@ let currentFilter = 'Semua';
 let currentSearch = '';
 let cachedRecords = [];
 let editingRecordId = null;
+
+function getSavedProfile() {
+  try {
+    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!raw) {
+      return { ...DEFAULT_PROFILE };
+    }
+    const parsed = JSON.parse(raw);
+    return {
+      nama: parsed && parsed.nama ? String(parsed.nama) : DEFAULT_PROFILE.nama,
+      instansi: parsed && parsed.instansi ? String(parsed.instansi) : DEFAULT_PROFILE.instansi,
+      bio: parsed && parsed.bio ? String(parsed.bio) : DEFAULT_PROFILE.bio
+    };
+  } catch (error) {
+    return { ...DEFAULT_PROFILE };
+  }
+}
+
+function saveProfileToStorage(profile) {
+  const cleanProfile = {
+    nama: profile && profile.nama ? String(profile.nama).trim() : DEFAULT_PROFILE.nama,
+    instansi: profile && profile.instansi ? String(profile.instansi).trim() : DEFAULT_PROFILE.instansi,
+    bio: profile && profile.bio ? String(profile.bio).trim() : DEFAULT_PROFILE.bio
+  };
+  localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(cleanProfile));
+  return cleanProfile;
+}
 
 function openDatabase() {
   if (dbInstance) {
@@ -79,6 +113,15 @@ async function deleteDocumentById(id) {
       reject(request.error);
     };
   });
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function showToast(message) {
@@ -531,14 +574,14 @@ function initArsipPage() {
     }
   }
 
-  function openPreviewModal(recordOrDom) {
-    if (!previewModal || !previewStage) {
+  function openPreviewModal(record) {
+    if (!previewModal || !previewStage || !record) {
       return;
     }
     revokeActivePreviewUrl();
 
-    const title = recordOrDom.fileName || recordOrDom.title || 'Dokumen';
-    const badgeText = recordOrDom.jenis || recordOrDom.badge || 'Arsip';
+    const title = record.fileName || 'Dokumen';
+    const badgeText = normalizeJenisLabel(record.jenis || record.kategori);
 
     if (previewFileName) {
       previewFileName.textContent = title;
@@ -549,9 +592,9 @@ function initArsipPage() {
 
     previewStage.innerHTML = '';
 
-    if (recordOrDom.fileBlob instanceof Blob) {
-      activePreviewUrl = URL.createObjectURL(recordOrDom.fileBlob);
-      const mime = recordOrDom.mimeType || recordOrDom.fileBlob.type || '';
+    if (record.fileBlob instanceof Blob) {
+      activePreviewUrl = URL.createObjectURL(record.fileBlob);
+      const mime = record.mimeType || record.fileBlob.type || '';
       if (mime.startsWith('image/')) {
         previewStage.style.height = '380px';
         const img = document.createElement('img');
@@ -576,7 +619,7 @@ function initArsipPage() {
       previewStage.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px;text-align:center;">
           <i data-lucide="file-text" width="48" height="48"></i>
-          <span style="font-size:0.875rem;color:#57534E;">Pratinjau contoh arsip statis</span>
+          <span style="font-size:0.875rem;color:#57534E;">Berkas pratinjau tidak tersedia</span>
         </div>
       `;
     }
@@ -614,7 +657,28 @@ function initArsipPage() {
     });
   }
 
+  function renderEmptyDatabaseState() {
+    archiveGrid.innerHTML = `
+      <div class="empty-state">
+        <i data-lucide="archive" width="36" height="36"></i>
+        <h3>Belum ada dokumen tersimpan</h3>
+        <a href="index.html" class="btn btn-primary">
+          <i data-lucide="plus" width="18" height="18"></i>
+          <span>Unggah Dokumen</span>
+        </a>
+      </div>
+    `;
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
   function renderArchiveCards(records) {
+    if (!records || records.length === 0) {
+      renderEmptyDatabaseState();
+      return;
+    }
+
     const filtered = records.filter((item) => {
       const cat = normalizeKategori(item.kategori || item.jenis);
       const matchesCategory = currentFilter === 'Semua' || cat === currentFilter;
@@ -645,20 +709,27 @@ function initArsipPage() {
           ? item.fileName.split('.').pop().toUpperCase()
           : 'PDF';
         const sizeLabel = formatFileSize(item.size);
+        const safeId = escapeHtml(item.id);
+        const safeFileName = escapeHtml(item.fileName);
+        const safeJenisLabel = escapeHtml(jenisLabel);
+        const safeBidang = escapeHtml(item.bidang || 'Akademik');
+        const safeTahun = escapeHtml(item.tahun || '2026');
+        const safeKategori = escapeHtml(kategori);
+
         return `
-          <article class="bento-card bento-half" data-id="${item.id}" data-category="${kategori}" data-title="${item.fileName}">
+          <article class="bento-card bento-half" data-id="${safeId}" data-category="${safeKategori}" data-title="${safeFileName}">
             <div class="bento-card-header">
-              <span class="badge badge-apricot">${jenisLabel}</span>
-              <span class="bento-card-date">${item.tahun || '2026'}</span>
+              <span class="badge badge-apricot">${safeJenisLabel}</span>
+              <span class="bento-card-date">${safeTahun}</span>
             </div>
             <div class="bento-card-body">
-              <h2 class="bento-card-title">${item.fileName}</h2>
-              <p class="bento-card-desc">Bidang ${item.bidang || 'Akademik'} · ${ext} · ${sizeLabel}</p>
+              <h2 class="bento-card-title">${safeFileName}</h2>
+              <p class="bento-card-desc">Bidang ${safeBidang} · ${ext} · ${sizeLabel}</p>
             </div>
             <div class="bento-card-footer">
               <div class="bento-student">
-                <span class="bento-student-name">${item.bidang || 'Akademik'}</span>
-                <span class="bento-student-class">Folder ${kategori}</span>
+                <span class="bento-student-name">${safeBidang}</span>
+                <span class="bento-student-class">Folder ${safeKategori}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
@@ -679,49 +750,9 @@ function initArsipPage() {
     }
   }
 
-  function applyStaticFilter() {
-    const cards = Array.from(archiveGrid.querySelectorAll('.bento-card'));
-    let visibleCount = 0;
-    const existingEmpty = archiveGrid.querySelector('.empty-state');
-    if (existingEmpty) {
-      existingEmpty.remove();
-    }
-
-    cards.forEach((card) => {
-      const cat = card.getAttribute('data-category') || '';
-      const title = (card.getAttribute('data-title') || card.textContent || '').toLowerCase();
-      const matchCat = currentFilter === 'Semua' || cat === currentFilter;
-      const matchSearch = !currentSearch || title.includes(currentSearch.toLowerCase());
-      if (matchCat && matchSearch) {
-        card.style.display = '';
-        visibleCount++;
-      } else {
-        card.style.display = 'none';
-      }
-    });
-
-    if (visibleCount === 0) {
-      const emptyDiv = document.createElement('div');
-      emptyDiv.className = 'empty-state';
-      emptyDiv.innerHTML = `
-        <i data-lucide="folder-open" width="36" height="36"></i>
-        <h3>Dokumen Tidak Ditemukan</h3>
-        <p>Ubah kata kunci pencarian atau pilih kategori lain.</p>
-      `;
-      archiveGrid.appendChild(emptyDiv);
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-    }
-  }
-
   async function refreshArchiveView() {
     cachedRecords = await getAllDocuments();
-    if (cachedRecords.length > 0) {
-      renderArchiveCards(cachedRecords);
-    } else {
-      applyStaticFilter();
-    }
+    renderArchiveCards(cachedRecords);
   }
 
   archiveGrid.addEventListener('click', async (event) => {
@@ -737,52 +768,23 @@ function initArsipPage() {
     const action = actionBtn.getAttribute('data-action');
     const dbItem = cachedRecords.find((item) => item.id === docId);
 
+    if (!dbItem) {
+      return;
+    }
+
     if (action === 'preview') {
-      if (dbItem) {
-        openPreviewModal(dbItem);
-      } else {
-        const titleEl = card.querySelector('.bento-card-title');
-        const badgeEl = card.querySelector('.badge');
-        openPreviewModal({
-          title: titleEl ? titleEl.textContent : 'Dokumen',
-          badge: badgeEl ? badgeEl.textContent : 'Arsip'
-        });
-      }
+      openPreviewModal(dbItem);
     } else if (action === 'delete') {
-      if (dbItem) {
-        await deleteDocumentById(docId);
-        cachedRecords = await getAllDocuments();
-        if (cachedRecords.length > 0) {
-          renderArchiveCards(cachedRecords);
-        } else {
-          archiveGrid.innerHTML = `
-            <div class="empty-state">
-              <i data-lucide="archive" width="36" height="36"></i>
-              <h3>Lemari Arsip Kosong</h3>
-              <p>Unggah dokumen baru melalui halaman Beranda.</p>
-            </div>
-          `;
-          if (window.lucide) {
-            lucide.createIcons();
-          }
-        }
-        showToast('Dokumen dihapus dari arsip.');
-      } else {
-        card.remove();
-        applyStaticFilter();
-        showToast('Dokumen dihapus.');
-      }
+      await deleteDocumentById(docId);
+      await refreshArchiveView();
+      showToast('Dokumen dihapus dari arsip.');
     }
   });
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       currentSearch = searchInput.value.trim();
-      if (cachedRecords.length > 0) {
-        renderArchiveCards(cachedRecords);
-      } else {
-        applyStaticFilter();
-      }
+      renderArchiveCards(cachedRecords);
     });
   }
 
@@ -797,21 +799,14 @@ function initArsipPage() {
       });
       pill.classList.add('active');
       currentFilter = pill.getAttribute('data-filter') || 'Semua';
-      if (cachedRecords.length > 0) {
-        renderArchiveCards(cachedRecords);
-      } else {
-        applyStaticFilter();
-      }
+      renderArchiveCards(cachedRecords);
     });
   }
 
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', async () => {
       const records = await getAllDocuments();
-      if (records.length === 0) {
-        showToast('Belum ada dokumen tersimpan untuk diekspor.');
-        return;
-      }
+      const currentProfile = getSavedProfile();
       const serialized = await Promise.all(
         records.map(async (item) => {
           const copy = {
@@ -834,7 +829,14 @@ function initArsipPage() {
         })
       );
 
-      const jsonStr = JSON.stringify({ app: 'folio.smasa', exportedAt: new Date().toISOString(), dokumen: serialized }, null, 2);
+      const backupData = {
+        app: 'folio.smasa',
+        exportedAt: new Date().toISOString(),
+        profil: currentProfile,
+        dokumen: serialized
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -844,7 +846,7 @@ function initArsipPage() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast('Data arsip berhasil diekspor.');
+      showToast('Data arsip dan profil berhasil diekspor.');
     });
   }
 
@@ -861,30 +863,41 @@ function initArsipPage() {
       try {
         const text = await file.text();
         const parsed = JSON.parse(text);
-        const list = Array.isArray(parsed) ? parsed : parsed.dokumen;
-        if (!Array.isArray(list) || list.length === 0) {
+        const hasProfile = parsed && typeof parsed === 'object' && parsed.profil && typeof parsed.profil === 'object';
+        const list = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.dokumen) ? parsed.dokumen : null;
+
+        if (!list && !hasProfile) {
           showToast('Format berkas JSON tidak valid.');
           importFileInput.value = '';
           return;
         }
-        for (const item of list) {
-          const record = {
-            id: item.id || 'doc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-            fileName: item.fileName || 'Dokumen.pdf',
-            originalName: item.originalName || item.fileName || 'Dokumen.pdf',
-            jenis: normalizeJenisLabel(item.jenis || item.kategori),
-            kategori: normalizeKategori(item.kategori || item.jenis),
-            bidang: item.bidang || 'Akademik',
-            tahun: item.tahun || '2026',
-            mimeType: item.mimeType || 'application/pdf',
-            size: item.size || 0,
-            fileBlob: item.dataUrl ? dataUrlToBlob(item.dataUrl) : null,
-            createdAt: item.createdAt || Date.now()
-          };
-          await saveDocument(record);
+
+        if (hasProfile) {
+          saveProfileToStorage(parsed.profil);
         }
+
+        if (list && list.length > 0) {
+          for (const item of list) {
+            const record = {
+              id: item.id || 'doc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+              fileName: item.fileName || 'Dokumen.pdf',
+              originalName: item.originalName || item.fileName || 'Dokumen.pdf',
+              jenis: normalizeJenisLabel(item.jenis || item.kategori),
+              kategori: normalizeKategori(item.kategori || item.jenis),
+              bidang: item.bidang || 'Akademik',
+              tahun: item.tahun || '2026',
+              mimeType: item.mimeType || 'application/pdf',
+              size: item.size || 0,
+              fileBlob: item.dataUrl ? dataUrlToBlob(item.dataUrl) : null,
+              createdAt: item.createdAt || Date.now()
+            };
+            await saveDocument(record);
+          }
+        }
+
         await refreshArchiveView();
-        showToast(`${list.length} dokumen berhasil diimpor.`);
+        const importedCount = list ? list.length : 0;
+        showToast(`${importedCount} dokumen berhasil diimpor.`);
       } catch (error) {
         showToast('Gagal membaca berkas JSON.');
       }
@@ -897,13 +910,94 @@ function initArsipPage() {
 
 function initPortofolioPage() {
   const showcaseGrid = document.getElementById('showcaseGrid');
+  if (!showcaseGrid) {
+    return;
+  }
+
+  const profileInstitutionEl = document.getElementById('profileInstitution');
+  const profileNameEl = document.getElementById('profileName');
+  const profileBioEl = document.getElementById('profileBio');
+  const editProfileBtn = document.getElementById('editProfileBtn');
+  const editProfileModal = document.getElementById('editProfileModal');
+  const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+  const cancelProfileBtn = document.getElementById('cancelProfileBtn');
+  const profileForm = document.getElementById('profileForm');
+  const inputProfileName = document.getElementById('inputProfileName');
+  const inputProfileInstitution = document.getElementById('inputProfileInstitution');
+  const inputProfileBio = document.getElementById('inputProfileBio');
+
   const presentationModeBtn = document.getElementById('presentationModeBtn');
   const printPdfBtn = document.getElementById('printPdfBtn');
   const navbar = document.querySelector('.navbar');
   const footer = document.querySelector('.footer');
 
-  if (!showcaseGrid) {
-    return;
+  function applyProfileToDom(profile) {
+    if (profileNameEl) {
+      profileNameEl.textContent = profile.nama;
+    }
+    if (profileInstitutionEl) {
+      profileInstitutionEl.textContent = profile.instansi;
+    }
+    if (profileBioEl) {
+      profileBioEl.textContent = profile.bio;
+    }
+  }
+
+  applyProfileToDom(getSavedProfile());
+
+  function openEditProfileModal() {
+    const current = getSavedProfile();
+    if (inputProfileName) {
+      inputProfileName.value = current.nama;
+    }
+    if (inputProfileInstitution) {
+      inputProfileInstitution.value = current.instansi;
+    }
+    if (inputProfileBio) {
+      inputProfileBio.value = current.bio;
+    }
+    if (editProfileModal) {
+      editProfileModal.classList.add('is-open');
+      editProfileModal.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeEditProfileModal() {
+    if (editProfileModal) {
+      editProfileModal.classList.remove('is-open');
+      editProfileModal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', openEditProfileModal);
+  }
+  if (closeProfileModalBtn) {
+    closeProfileModalBtn.addEventListener('click', closeEditProfileModal);
+  }
+  if (cancelProfileBtn) {
+    cancelProfileBtn.addEventListener('click', closeEditProfileModal);
+  }
+  if (editProfileModal) {
+    editProfileModal.addEventListener('click', (event) => {
+      if (event.target === editProfileModal) {
+        closeEditProfileModal();
+      }
+    });
+  }
+
+  if (profileForm) {
+    profileForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const updated = saveProfileToStorage({
+        nama: inputProfileName ? inputProfileName.value : DEFAULT_PROFILE.nama,
+        instansi: inputProfileInstitution ? inputProfileInstitution.value : DEFAULT_PROFILE.instansi,
+        bio: inputProfileBio ? inputProfileBio.value : DEFAULT_PROFILE.bio
+      });
+      applyProfileToDom(updated);
+      closeEditProfileModal();
+      showToast('Profil berhasil disimpan.');
+    });
   }
 
   let isPresentationMode = false;
@@ -919,6 +1013,9 @@ function initPortofolioPage() {
     }
     if (printPdfBtn) {
       printPdfBtn.style.display = active ? 'none' : '';
+    }
+    if (editProfileBtn) {
+      editProfileBtn.style.display = active ? 'none' : '';
     }
     if (presentationModeBtn) {
       presentationModeBtn.innerHTML = active
@@ -974,6 +1071,23 @@ function initPortofolioPage() {
       URL.revokeObjectURL(oldUrl);
     }
 
+    if (!records || records.length === 0) {
+      showcaseGrid.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="award" width="36" height="36"></i>
+          <h3>Belum ada pencapaian tersimpan</h3>
+          <a href="index.html" class="btn btn-primary">
+            <i data-lucide="plus" width="18" height="18"></i>
+            <span>Unggah Dokumen</span>
+          </a>
+        </div>
+      `;
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+      return;
+    }
+
     showcaseGrid.innerHTML = records
       .map((item, index) => {
         let spanClass = 'bento-half';
@@ -983,8 +1097,11 @@ function initPortofolioPage() {
           spanClass = '';
         }
 
-        const jenisLabel = normalizeJenisLabel(item.jenis || item.kategori);
-        const readableTitle = extractReadableTitle(item.fileName);
+        const jenisLabel = escapeHtml(normalizeJenisLabel(item.jenis || item.kategori));
+        const readableTitle = escapeHtml(extractReadableTitle(item.fileName));
+        const safeFileName = escapeHtml(item.fileName);
+        const safeBidang = escapeHtml(item.bidang || 'Akademik');
+        const safeTahun = escapeHtml(item.tahun || '2026');
         const mime = item.mimeType || (item.fileBlob && item.fileBlob.type) || '';
         let previewHtml = '';
 
@@ -1000,7 +1117,7 @@ function initPortofolioPage() {
           previewHtml = `
             <div class="bento-card-preview" style="flex-direction: column; gap: 10px; padding: 20px;">
               <i data-lucide="file-check-2" width="40" height="40" style="color: #92140C;"></i>
-              <span style="font-size: 0.85rem; font-weight: 600; color: #1E1E24; text-align: center;">${item.fileName}</span>
+              <span style="font-size: 0.85rem; font-weight: 600; color: #1E1E24; text-align: center;">${safeFileName}</span>
             </div>
           `;
         }
@@ -1009,12 +1126,12 @@ function initPortofolioPage() {
           <article class="bento-card ${spanClass}">
             <div class="bento-card-header">
               <span class="badge badge-apricot">${jenisLabel}</span>
-              <span class="bento-card-date">${item.tahun || '2026'}</span>
+              <span class="bento-card-date">${safeTahun}</span>
             </div>
             ${previewHtml}
             <div class="bento-card-body">
               <h3 class="bento-card-title">${readableTitle}</h3>
-              <p class="bento-card-desc">Bidang ${item.bidang || 'Akademik'} · ${item.fileName}</p>
+              <p class="bento-card-desc">Bidang ${safeBidang} · ${safeFileName}</p>
             </div>
           </article>
         `;
@@ -1027,10 +1144,8 @@ function initPortofolioPage() {
   }
 
   getAllDocuments().then((records) => {
-    if (records.length > 0) {
-      updatePortfolioStats(records);
-      renderShowcaseCards(records);
-    }
+    updatePortfolioStats(records);
+    renderShowcaseCards(records);
   });
 }
 
