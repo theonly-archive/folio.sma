@@ -198,7 +198,7 @@ function extractReadableTitle(fileName) {
   const parts = fileName.split('_');
   const rawName = parts.length >= 3 ? parts.slice(2).join('_') : fileName;
   const withoutExt = rawName.replace(/\.[^/.]+$/, '');
-  return withoutExt.replace(/-/g, ' ').trim() || fileName;
+  return withoutExt.replace(/[-_]+/g, ' ').trim() || fileName;
 }
 
 function blobToDataUrl(blob) {
@@ -1099,10 +1099,10 @@ function initPortofolioPage() {
 
         const jenisLabel = escapeHtml(normalizeJenisLabel(item.jenis || item.kategori));
         const readableTitle = escapeHtml(extractReadableTitle(item.fileName));
-        const safeFileName = escapeHtml(item.fileName);
         const safeBidang = escapeHtml(item.bidang || 'Akademik');
         const safeTahun = escapeHtml(item.tahun || '2026');
         const mime = item.mimeType || (item.fileBlob && item.fileBlob.type) || '';
+        const isPdf = mime === 'application/pdf' || String(item.fileName || '').toLowerCase().endsWith('.pdf');
         let previewHtml = '';
 
         if (item.fileBlob instanceof Blob && mime.startsWith('image/')) {
@@ -1110,14 +1110,22 @@ function initPortofolioPage() {
           createdShowcaseUrls.push(imgUrl);
           previewHtml = `
             <div class="bento-card-preview">
-              <img src="${imgUrl}" alt="${readableTitle}">
+              <img src="${imgUrl}" alt="${readableTitle}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 10px;">
+            </div>
+          `;
+        } else if (item.fileBlob instanceof Blob && isPdf) {
+          const pdfUrl = URL.createObjectURL(item.fileBlob);
+          createdShowcaseUrls.push(pdfUrl);
+          previewHtml = `
+            <div class="bento-card-preview">
+              <iframe src="${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0" title="${readableTitle}" style="width: 100%; height: 180px; border: none; border-radius: 10px; pointer-events: none;"></iframe>
             </div>
           `;
         } else {
           previewHtml = `
             <div class="bento-card-preview" style="flex-direction: column; gap: 10px; padding: 20px;">
               <i data-lucide="file-check-2" width="40" height="40" style="color: #92140C;"></i>
-              <span style="font-size: 0.85rem; font-weight: 600; color: #1E1E24; text-align: center;">${safeFileName}</span>
+              <span style="font-size: 0.85rem; font-weight: 600; color: #1E1E24; text-align: center;">${readableTitle}</span>
             </div>
           `;
         }
@@ -1131,7 +1139,7 @@ function initPortofolioPage() {
             ${previewHtml}
             <div class="bento-card-body">
               <h3 class="bento-card-title">${readableTitle}</h3>
-              <p class="bento-card-desc">Bidang ${safeBidang} · ${safeFileName}</p>
+              <p class="bento-card-desc">Bidang ${safeBidang} • ${safeTahun}</p>
             </div>
           </article>
         `;
