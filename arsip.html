@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lemari Arsip — folio.smasa</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a href="index.html" class="navbar-brand">
+        <span class="brand-badge">F</span>
+        <span><span style="color: #1E1E24;">folio</span><span style="color: #92140C;">.smasa</span></span>
+      </a>
+
+      <nav>
+        <ul class="navbar-menu" id="navbarMenu">
+          <li><a href="index.html" class="nav-link">Beranda</a></li>
+          <li><a href="arsip.html" class="nav-link active">Lemari Arsip</a></li>
+          <li><a href="portofolio.html" class="nav-link">Portofolio</a></li>
+        </ul>
+      </nav>
+
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      <div class="info-card" id="confirmBanner" style="margin-bottom: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="badge badge-apricot" style="padding: 8px; border-radius: 10px;">
+            <i data-lucide="folder-check" width="20" height="20"></i>
+          </span>
+          <p style="color: #1E1E24; font-weight: 500;">Dokumen berhasil dikelompokkan otomatis. Penempatan folder sudah sesuai?</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="btn btn-primary btn-sm" id="confirmOkBtn">
+            <i data-lucide="check" width="16" height="16"></i>
+            <span>Sudah Sesuai</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="changeCategoryBtn">
+            <i data-lucide="edit-3" width="16" height="16"></i>
+            <span>Ubah Kategori</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Lemari Arsip Dokumen</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="exportJsonBtn">
+            <i data-lucide="download" width="16" height="16"></i>
+            <span>Ekspor JSON</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" id="importJsonBtn">
+            <i data-lucide="upload" width="16" height="16"></i>
+            <span>Impor Data</span>
+          </button>
+          <input type="file" id="importFileInput" class="file-input-hidden" accept=".json,application/json">
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="search-field">
+          <i data-lucide="search" width="18" height="18" class="search-icon"></i>
+          <input type="search" id="searchInput" class="search-input" placeholder="Cari nama dokumen...">
+        </div>
+
+        <div class="pill-group" id="categoryFilter">
+          <button type="button" class="pill-btn active" data-filter="Semua">Semua</button>
+          <button type="button" class="pill-btn" data-filter="Lomba">Lomba</button>
+          <button type="button" class="pill-btn" data-filter="Kepanitiaan">Kepanitiaan</button>
+          <button type="button" class="pill-btn" data-filter="Organisasi">Organisasi</button>
+        </div>
+      </div>
+
+      <section class="bento-grid" id="archiveGrid">
+        <article class="bento-card bento-half" data-id="doc-1" data-category="Lomba" data-title="2026_Lomba-Akademik_Olimpiade-Matematika.pdf">
+          <div class="bento-card-header">
+            <span class="badge badge-apricot">Sertifikat Lomba</span>
+            <span class="bento-card-date">2026</span>
+          </div>
+          <div class="bento-card-body">
+            <h2 class="bento-card-title">2026_Lomba-Akademik_Olimpiade-Matematika.pdf</h2>
+            <p class="bento-card-desc">Bidang Akademik · PDF · 1,2 MB</p>
+          </div>
+          <div class="bento-card-footer">
+            <div class="bento-student">
+              <span class="bento-student-name">Akademik</span>
+              <span class="bento-student-class">Folder Lomba</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
+                <i data-lucide="eye" width="18" height="18"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-icon" data-action="delete" aria-label="Hapus Dokumen">
+                <i data-lucide="trash-2" width="18" height="18"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="bento-card bento-half" data-id="doc-2" data-category="Kepanitiaan" data-title="2026_Kepanitiaan-Non-Akademik_Ketua-Panitia-Pentas-Seni.pdf">
+          <div class="bento-card-header">
+            <span class="badge badge-apricot">Kepanitiaan</span>
+            <span class="bento-card-date">2026</span>
+          </div>
+          <div class="bento-card-body">
+            <h2 class="bento-card-title">2026_Kepanitiaan-Non-Akademik_Ketua-Panitia-Pentas-Seni.pdf</h2>
+            <p class="bento-card-desc">Bidang Non-Akademik · PDF · 940 KB</p>
+          </div>
+          <div class="bento-card-footer">
+            <div class="bento-student">
+              <span class="bento-student-name">Non-Akademik</span>
+              <span class="bento-student-class">Folder Kepanitiaan</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
+                <i data-lucide="eye" width="18" height="18"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-icon" data-action="delete" aria-label="Hapus Dokumen">
+                <i data-lucide="trash-2" width="18" height="18"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="bento-card bento-half" data-id="doc-3" data-category="Organisasi" data-title="2025_Organisasi-Non-Akademik_Sekretaris-Umum-OSIS.jpg">
+          <div class="bento-card-header">
+            <span class="badge badge-apricot">Organisasi</span>
+            <span class="bento-card-date">2025</span>
+          </div>
+          <div class="bento-card-body">
+            <h2 class="bento-card-title">2025_Organisasi-Non-Akademik_Sekretaris-Umum-OSIS.jpg</h2>
+            <p class="bento-card-desc">Bidang Non-Akademik · JPG · 1,8 MB</p>
+          </div>
+          <div class="bento-card-footer">
+            <div class="bento-student">
+              <span class="bento-student-name">Non-Akademik</span>
+              <span class="bento-student-class">Folder Organisasi</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
+                <i data-lucide="eye" width="18" height="18"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-icon" data-action="delete" aria-label="Hapus Dokumen">
+                <i data-lucide="trash-2" width="18" height="18"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="bento-card bento-half" data-id="doc-4" data-category="Lomba" data-title="2025_Lomba-Teknologi-Seni_Juara-Desain-Poster.png">
+          <div class="bento-card-header">
+            <span class="badge badge-apricot">Sertifikat Lomba</span>
+            <span class="bento-card-date">2025</span>
+          </div>
+          <div class="bento-card-body">
+            <h2 class="bento-card-title">2025_Lomba-Teknologi-Seni_Juara-Desain-Poster.png</h2>
+            <p class="bento-card-desc">Bidang Teknologi &amp; Seni · PNG · 2,1 MB</p>
+          </div>
+          <div class="bento-card-footer">
+            <div class="bento-student">
+              <span class="bento-student-name">Teknologi &amp; Seni</span>
+              <span class="bento-student-class">Folder Lomba</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
+                <i data-lucide="eye" width="18" height="18"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-icon" data-action="delete" aria-label="Hapus Dokumen">
+                <i data-lucide="trash-2" width="18" height="18"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="previewModal" aria-hidden="true">
+    <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="previewModalTitle">Pratinjau Dokumen</h2>
+        <button type="button" class="modal-close" id="closePreviewBtn" aria-label="Tutup">
+          <i data-lucide="x" width="18" height="18"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="file-summary-box">
+          <span class="file-summary-name" id="previewFileName">2026_Lomba-Akademik_Olimpiade-Matematika.pdf</span>
+          <span class="badge badge-apricot" id="previewFileBadge">Sertifikat Lomba</span>
+        </div>
+        <div class="bento-card-preview" id="previewStage" style="height: 260px;">
+          <i data-lucide="file-text" width="48" height="48"></i>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closePreviewFooterBtn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="editCategoryModal" aria-hidden="true">
+    <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="editCategoryTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="editCategoryTitle">Ubah Kategori Dokumen</h2>
+        <button type="button" class="modal-close" id="closeEditCategoryBtn" aria-label="Tutup">
+          <i data-lucide="x" width="18" height="18"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <span class="form-label">Jenis Dokumen</span>
+          <div class="pill-group" data-pill-group="edit-jenis">
+            <button type="button" class="pill-btn active" data-value="Lomba">Sertifikat Lomba</button>
+            <button type="button" class="pill-btn" data-value="Kepanitiaan">Kepanitiaan</button>
+            <button type="button" class="pill-btn" data-value="Organisasi">Organisasi</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <span class="form-label">Bidang</span>
+          <div class="pill-group" data-pill-group="edit-bidang">
+            <button type="button" class="pill-btn active" data-value="Akademik">Akademik</button>
+            <button type="button" class="pill-btn" data-value="Non-Akademik">Non-Akademik</button>
+            <button type="button" class="pill-btn" data-value="Teknologi & Seni">Teknologi &amp; Seni</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelEditCategoryBtn">Batal</button>
+        <button type="button" class="btn btn-primary" id="saveCategoryBtn">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>folio.smasa</span>
+      <span>Arsip Portofolio Pelajar SMASA</span>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
