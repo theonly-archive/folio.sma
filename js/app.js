@@ -1,12 +1,13 @@
-const DB_NAME = 'FolioSmasaDB';
+const DB_NAME = 'FolioSmaDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'dokumen';
-const PROFILE_STORAGE_KEY = 'folio_smasa_profile';
+const PROFILE_STORAGE_KEY = 'folio_sma_profile';
 
 const DEFAULT_PROFILE = {
   nama: 'Nama Pelajar',
-  instansi: 'SMA Negeri 1 Madiun',
-  bio: 'Arsip portofolio dan rekam prestasi pelajar'
+  jenjang: 'SMA',
+  instansi: '',
+  bio: 'Arsip portofolio dan rekam prestasi pelajar SMA/sederajat'
 };
 
 let dbInstance = null;
@@ -26,7 +27,8 @@ function getSavedProfile() {
     const parsed = JSON.parse(raw);
     return {
       nama: parsed && parsed.nama ? String(parsed.nama) : DEFAULT_PROFILE.nama,
-      instansi: parsed && parsed.instansi ? String(parsed.instansi) : DEFAULT_PROFILE.instansi,
+      jenjang: parsed && parsed.jenjang ? String(parsed.jenjang) : DEFAULT_PROFILE.jenjang,
+      instansi: parsed && typeof parsed.instansi === 'string' ? parsed.instansi : DEFAULT_PROFILE.instansi,
       bio: parsed && parsed.bio ? String(parsed.bio) : DEFAULT_PROFILE.bio
     };
   } catch (error) {
@@ -37,11 +39,25 @@ function getSavedProfile() {
 function saveProfileToStorage(profile) {
   const cleanProfile = {
     nama: profile && profile.nama ? String(profile.nama).trim() : DEFAULT_PROFILE.nama,
-    instansi: profile && profile.instansi ? String(profile.instansi).trim() : DEFAULT_PROFILE.instansi,
+    jenjang: profile && profile.jenjang ? String(profile.jenjang).trim() : DEFAULT_PROFILE.jenjang,
+    instansi: profile && typeof profile.instansi === 'string' ? profile.instansi.trim() : '',
     bio: profile && profile.bio ? String(profile.bio).trim() : DEFAULT_PROFILE.bio
   };
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(cleanProfile));
   return cleanProfile;
+}
+
+function formatInstitutionDisplay(profile) {
+  const rawInstansi = profile && profile.instansi ? String(profile.instansi).trim() : '';
+  const jenjang = profile && profile.jenjang ? String(profile.jenjang).trim() : 'SMA';
+  if (!rawInstansi || rawInstansi === 'Asal Sekolah Belum Diatur') {
+    return 'Asal Sekolah Belum Diatur';
+  }
+  const upper = rawInstansi.toUpperCase();
+  if (upper.startsWith('SMA') || upper.startsWith('SMK') || upper.startsWith('MA ') || upper === 'MA') {
+    return rawInstansi;
+  }
+  return `${jenjang} ${rawInstansi}`;
 }
 
 function openDatabase() {
@@ -195,10 +211,10 @@ function buildAutoFileName(tahun, jenis, bidang, originalName) {
 }
 
 function extractReadableTitle(fileName) {
-  const parts = fileName.split('_');
-  const rawName = parts.length >= 3 ? parts.slice(2).join('_') : fileName;
+  const parts = String(fileName || '').split('_');
+  const rawName = parts.length >= 3 ? parts.slice(2).join('_') : String(fileName || '');
   const withoutExt = rawName.replace(/\.[^/.]+$/, '');
-  return withoutExt.replace(/[-_]+/g, ' ').trim() || fileName;
+  return withoutExt.replace(/[-_]+/g, ' ').trim() || String(fileName || 'Dokumen');
 }
 
 function blobToDataUrl(blob) {
@@ -221,6 +237,12 @@ function dataUrlToBlob(dataUrl) {
     u8arr[n] = bstr.charCodeAt(n);
   }
   return new Blob([u8arr], { type: mime });
+}
+
+function refreshIcons() {
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 function initNavbar() {
@@ -326,7 +348,7 @@ function initIndexPage() {
 
   function openUploadModal(file) {
     if (!isSupportedFile(file)) {
-      showToast('Format file harus JPG, PNG, atau PDF.');
+      showToast('Format file harus PDF, JPG, atau PNG.');
       return;
     }
     selectedUploadFile = file;
@@ -339,6 +361,7 @@ function initIndexPage() {
     }
     uploadModal.classList.add('is-open');
     uploadModal.setAttribute('aria-hidden', 'false');
+    refreshIcons();
   }
 
   function closeUploadModal() {
@@ -357,6 +380,13 @@ function initIndexPage() {
 
   dropZone.addEventListener('click', () => {
     fileInput.click();
+  });
+
+  dropZone.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      fileInput.click();
+    }
   });
 
   fileInput.addEventListener('change', () => {
@@ -404,7 +434,7 @@ function initIndexPage() {
     saveArchiveBtn.addEventListener('click', async (event) => {
       event.preventDefault();
       if (!selectedUploadFile) {
-        showToast('Pilih file terlebih dahulu.');
+        showToast('Pilih berkas terlebih dahulu.');
         return;
       }
 
@@ -437,7 +467,7 @@ function initIndexPage() {
       } catch (error) {
         saveArchiveBtn.style.pointerEvents = '';
         saveArchiveBtn.style.opacity = '';
-        showToast('Gagal menyimpan dokumen ke arsip.');
+        showToast('Gagal menyimpan dokumen.');
       }
     });
   }
@@ -454,6 +484,10 @@ function initArsipPage() {
   const changeCategoryBtn = document.getElementById('changeCategoryBtn');
   const searchInput = document.getElementById('searchInput');
   const categoryFilter = document.getElementById('categoryFilter');
+
+  const openBackupModalBtn = document.getElementById('openBackupModalBtn');
+  const backupModal = document.getElementById('backupModal');
+  const closeBackupModalBtn = document.getElementById('closeBackupModalBtn');
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   const importJsonBtn = document.getElementById('importJsonBtn');
   const importFileInput = document.getElementById('importFileInput');
@@ -492,7 +526,7 @@ function initArsipPage() {
         confirmBanner.style.display = 'none';
       }
       clearBaruQueryParam();
-      showToast('Penempatan folder dikonfirmasi.');
+      showToast('Kategori dokumen dikonfirmasi.');
     });
   }
 
@@ -509,6 +543,7 @@ function initArsipPage() {
       if (editCategoryModal) {
         editCategoryModal.classList.add('is-open');
         editCategoryModal.setAttribute('aria-hidden', 'false');
+        refreshIcons();
       }
     });
   }
@@ -567,6 +602,35 @@ function initArsipPage() {
     });
   }
 
+  function openBackupModal() {
+    if (backupModal) {
+      backupModal.classList.add('is-open');
+      backupModal.setAttribute('aria-hidden', 'false');
+      refreshIcons();
+    }
+  }
+
+  function closeBackupModal() {
+    if (backupModal) {
+      backupModal.classList.remove('is-open');
+      backupModal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  if (openBackupModalBtn) {
+    openBackupModalBtn.addEventListener('click', openBackupModal);
+  }
+  if (closeBackupModalBtn) {
+    closeBackupModalBtn.addEventListener('click', closeBackupModal);
+  }
+  if (backupModal) {
+    backupModal.addEventListener('click', (event) => {
+      if (event.target === backupModal) {
+        closeBackupModal();
+      }
+    });
+  }
+
   function revokeActivePreviewUrl() {
     if (activePreviewUrl) {
       URL.revokeObjectURL(activePreviewUrl);
@@ -606,13 +670,13 @@ function initArsipPage() {
         previewStage.appendChild(img);
       } else {
         previewStage.style.height = '420px';
-        const embed = document.createElement('embed');
-        embed.src = activePreviewUrl;
-        embed.type = 'application/pdf';
-        embed.style.width = '100%';
-        embed.style.height = '100%';
-        embed.style.border = 'none';
-        previewStage.appendChild(embed);
+        const iframe = document.createElement('iframe');
+        iframe.src = activePreviewUrl;
+        iframe.title = title;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        previewStage.appendChild(iframe);
       }
     } else {
       previewStage.style.height = '260px';
@@ -626,9 +690,7 @@ function initArsipPage() {
 
     previewModal.classList.add('is-open');
     previewModal.setAttribute('aria-hidden', 'false');
-    if (window.lucide) {
-      lucide.createIcons();
-    }
+    refreshIcons();
   }
 
   function closePreviewModal() {
@@ -660,7 +722,7 @@ function initArsipPage() {
   function renderEmptyDatabaseState() {
     archiveGrid.innerHTML = `
       <div class="empty-state">
-        <i data-lucide="archive" width="36" height="36"></i>
+        <i data-lucide="folder-open" width="36" height="36"></i>
         <h3>Belum ada dokumen tersimpan</h3>
         <a href="index.html" class="btn btn-primary">
           <i data-lucide="plus" width="18" height="18"></i>
@@ -668,9 +730,7 @@ function initArsipPage() {
         </a>
       </div>
     `;
-    if (window.lucide) {
-      lucide.createIcons();
-    }
+    refreshIcons();
   }
 
   function renderArchiveCards(records) {
@@ -690,14 +750,12 @@ function initArsipPage() {
     if (filtered.length === 0) {
       archiveGrid.innerHTML = `
         <div class="empty-state">
-          <i data-lucide="folder-open" width="36" height="36"></i>
+          <i data-lucide="search-x" width="36" height="36"></i>
           <h3>Dokumen Tidak Ditemukan</h3>
           <p>Ubah kata kunci pencarian atau pilih kategori lain.</p>
         </div>
       `;
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      refreshIcons();
       return;
     }
 
@@ -724,12 +782,12 @@ function initArsipPage() {
             </div>
             <div class="bento-card-body">
               <h2 class="bento-card-title">${safeFileName}</h2>
-              <p class="bento-card-desc">Bidang ${safeBidang} · ${ext} · ${sizeLabel}</p>
+              <p class="bento-card-desc">Bidang ${safeBidang} &middot; ${ext} &middot; ${sizeLabel}</p>
             </div>
             <div class="bento-card-footer">
               <div class="bento-student">
                 <span class="bento-student-name">${safeBidang}</span>
-                <span class="bento-student-class">Folder ${safeKategori}</span>
+                <span class="bento-student-class">Kategori ${safeKategori}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 8px;">
                 <button type="button" class="btn btn-secondary btn-icon" data-action="preview" aria-label="Pratinjau Dokumen">
@@ -745,9 +803,7 @@ function initArsipPage() {
       })
       .join('');
 
-    if (window.lucide) {
-      lucide.createIcons();
-    }
+    refreshIcons();
   }
 
   async function refreshArchiveView() {
@@ -777,7 +833,7 @@ function initArsipPage() {
     } else if (action === 'delete') {
       await deleteDocumentById(docId);
       await refreshArchiveView();
-      showToast('Dokumen dihapus dari arsip.');
+      showToast('Dokumen dihapus.');
     }
   });
 
@@ -830,7 +886,7 @@ function initArsipPage() {
       );
 
       const backupData = {
-        app: 'folio.smasa',
+        app: 'folio.sma',
         exportedAt: new Date().toISOString(),
         profil: currentProfile,
         dokumen: serialized
@@ -841,12 +897,13 @@ function initArsipPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `folio-smasa-cadangan-${new Date().toISOString().slice(0, 10)}.json`;
+      link.download = `folio-sma-cadangan-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast('Data arsip dan profil berhasil diekspor.');
+      closeBackupModal();
+      showToast('Cadangan data berhasil diunduh.');
     });
   }
 
@@ -896,8 +953,9 @@ function initArsipPage() {
         }
 
         await refreshArchiveView();
+        closeBackupModal();
         const importedCount = list ? list.length : 0;
-        showToast(`${importedCount} dokumen berhasil diimpor.`);
+        showToast(`${importedCount} dokumen berhasil dipulihkan.`);
       } catch (error) {
         showToast('Gagal membaca berkas JSON.');
       }
@@ -923,10 +981,12 @@ function initPortofolioPage() {
   const cancelProfileBtn = document.getElementById('cancelProfileBtn');
   const profileForm = document.getElementById('profileForm');
   const inputProfileName = document.getElementById('inputProfileName');
+  const inputProfileLevel = document.getElementById('inputProfileLevel');
   const inputProfileInstitution = document.getElementById('inputProfileInstitution');
   const inputProfileBio = document.getElementById('inputProfileBio');
 
   const presentationModeBtn = document.getElementById('presentationModeBtn');
+  const exitPreviewBtn = document.getElementById('exitPreviewBtn');
   const printPdfBtn = document.getElementById('printPdfBtn');
   const navbar = document.querySelector('.navbar');
   const footer = document.querySelector('.footer');
@@ -936,7 +996,7 @@ function initPortofolioPage() {
       profileNameEl.textContent = profile.nama;
     }
     if (profileInstitutionEl) {
-      profileInstitutionEl.textContent = profile.instansi;
+      profileInstitutionEl.textContent = formatInstitutionDisplay(profile);
     }
     if (profileBioEl) {
       profileBioEl.textContent = profile.bio;
@@ -950,8 +1010,11 @@ function initPortofolioPage() {
     if (inputProfileName) {
       inputProfileName.value = current.nama;
     }
+    if (inputProfileLevel) {
+      inputProfileLevel.value = current.jenjang || 'SMA';
+    }
     if (inputProfileInstitution) {
-      inputProfileInstitution.value = current.instansi;
+      inputProfileInstitution.value = current.instansi || '';
     }
     if (inputProfileBio) {
       inputProfileBio.value = current.bio;
@@ -959,6 +1022,7 @@ function initPortofolioPage() {
     if (editProfileModal) {
       editProfileModal.classList.add('is-open');
       editProfileModal.setAttribute('aria-hidden', 'false');
+      refreshIcons();
     }
   }
 
@@ -991,7 +1055,8 @@ function initPortofolioPage() {
       event.preventDefault();
       const updated = saveProfileToStorage({
         nama: inputProfileName ? inputProfileName.value : DEFAULT_PROFILE.nama,
-        instansi: inputProfileInstitution ? inputProfileInstitution.value : DEFAULT_PROFILE.instansi,
+        jenjang: inputProfileLevel ? inputProfileLevel.value : DEFAULT_PROFILE.jenjang,
+        instansi: inputProfileInstitution ? inputProfileInstitution.value : '',
         bio: inputProfileBio ? inputProfileBio.value : DEFAULT_PROFILE.bio
       });
       applyProfileToDom(updated);
@@ -1000,42 +1065,53 @@ function initPortofolioPage() {
     });
   }
 
-  let isPresentationMode = false;
+  let isFullPreviewMode = false;
   const createdShowcaseUrls = [];
 
-  function setPresentationState(active) {
-    isPresentationMode = active;
+  function setFullPreviewState(active) {
+    isFullPreviewMode = active;
     if (navbar) {
       navbar.style.display = active ? 'none' : '';
     }
     if (footer) {
       footer.style.display = active ? 'none' : '';
     }
-    if (printPdfBtn) {
-      printPdfBtn.style.display = active ? 'none' : '';
-    }
     if (editProfileBtn) {
       editProfileBtn.style.display = active ? 'none' : '';
     }
     if (presentationModeBtn) {
-      presentationModeBtn.innerHTML = active
-        ? '<i data-lucide="minimize-2" width="18" height="18"></i><span>Keluar Presentasi</span>'
-        : '<i data-lucide="presentation" width="18" height="18"></i><span>Mode Presentasi</span>';
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      presentationModeBtn.style.display = active ? 'none' : '';
     }
+    if (printPdfBtn) {
+      printPdfBtn.style.display = active ? 'none' : '';
+    }
+    if (exitPreviewBtn) {
+      exitPreviewBtn.style.display = active ? 'inline-flex' : 'none';
+    }
+    refreshIcons();
   }
 
   if (presentationModeBtn) {
     presentationModeBtn.addEventListener('click', () => {
-      setPresentationState(!isPresentationMode);
+      setFullPreviewState(true);
+    });
+  }
+
+  if (exitPreviewBtn) {
+    exitPreviewBtn.addEventListener('click', () => {
+      setFullPreviewState(false);
     });
   }
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && isPresentationMode) {
-      setPresentationState(false);
+    if (event.key === 'Escape') {
+      if (editProfileModal && editProfileModal.classList.contains('is-open')) {
+        closeEditProfileModal();
+        return;
+      }
+      if (isFullPreviewMode) {
+        setFullPreviewState(false);
+      }
     }
   });
 
@@ -1045,7 +1121,7 @@ function initPortofolioPage() {
     const kepanitiaanCount = records.filter((item) => normalizeKategori(item.kategori || item.jenis) === 'Kepanitiaan').length;
     const organisasiCount = records.filter((item) => normalizeKategori(item.kategori || item.jenis) === 'Organisasi').length;
 
-    const statCards = document.querySelectorAll('.main-content > .container > .bento-grid:first-of-type .bento-card');
+    const statCards = document.querySelectorAll('#portfolioMain > .container > .bento-grid:first-of-type .bento-card');
     statCards.forEach((card) => {
       const labelEl = card.querySelector('.stat-label');
       const valueEl = card.querySelector('.stat-value');
@@ -1053,7 +1129,7 @@ function initPortofolioPage() {
         return;
       }
       const label = labelEl.textContent.trim();
-      if (label === 'Total Dokumen') {
+      if (label === 'Total bukti tersimpan') {
         valueEl.textContent = String(totalCount);
       } else if (label === 'Akademik') {
         valueEl.textContent = String(akademikCount);
@@ -1082,9 +1158,7 @@ function initPortofolioPage() {
           </a>
         </div>
       `;
-      if (window.lucide) {
-        lucide.createIcons();
-      }
+      refreshIcons();
       return;
     }
 
@@ -1139,16 +1213,14 @@ function initPortofolioPage() {
             ${previewHtml}
             <div class="bento-card-body">
               <h3 class="bento-card-title">${readableTitle}</h3>
-              <p class="bento-card-desc">Bidang ${safeBidang} • ${safeTahun}</p>
+              <p class="bento-card-desc">Bidang ${safeBidang} &bull; ${safeTahun}</p>
             </div>
           </article>
         `;
       })
       .join('');
 
-    if (window.lucide) {
-      lucide.createIcons();
-    }
+    refreshIcons();
   }
 
   getAllDocuments().then((records) => {
@@ -1162,7 +1234,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initIndexPage();
   initArsipPage();
   initPortofolioPage();
-  if (window.lucide) {
-    lucide.createIcons();
-  }
+  refreshIcons();
 });
