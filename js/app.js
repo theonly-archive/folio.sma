@@ -217,6 +217,41 @@ function extractReadableTitle(fileName) {
   return withoutExt.replace(/[-_]+/g, ' ').trim() || String(fileName || 'Dokumen');
 }
 
+function encodeSharePayload(payload) {
+  const jsonString = JSON.stringify(payload);
+  return btoa(encodeURIComponent(jsonString));
+}
+
+function decodeSharePayload(encoded) {
+  const jsonString = decodeURIComponent(atob(encoded));
+  return JSON.parse(jsonString);
+}
+
+async function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (error) {
+    }
+  }
+  const helper = document.createElement('textarea');
+  helper.value = text;
+  helper.setAttribute('readonly', '');
+  helper.style.position = 'fixed';
+  helper.style.opacity = '0';
+  document.body.appendChild(helper);
+  helper.select();
+  let success = false;
+  try {
+    success = document.execCommand('copy');
+  } catch (error) {
+    success = false;
+  }
+  helper.remove();
+  return success;
+}
+
 function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -976,6 +1011,8 @@ function initPortofolioPage() {
   const profileNameEl = document.getElementById('profileName');
   const profileBioEl = document.getElementById('profileBio');
   const editProfileBtn = document.getElementById('editProfileBtn');
+  const sharePortfolioBtn = document.getElementById('sharePortfolioBtn');
+  const sharedBanner = document.getElementById('sharedBanner');
   const editProfileModal = document.getElementById('editProfileModal');
   const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
   const cancelProfileBtn = document.getElementById('cancelProfileBtn');
@@ -991,6 +1028,8 @@ function initPortofolioPage() {
   const navbar = document.querySelector('.navbar');
   const footer = document.querySelector('.footer');
 
+  let isSharedView = false;
+
   function applyProfileToDom(profile) {
     if (profileNameEl) {
       profileNameEl.textContent = profile.nama;
@@ -1003,9 +1042,28 @@ function initPortofolioPage() {
     }
   }
 
-  applyProfileToDom(getSavedProfile());
+  function applySharedModeUi(active) {
+    isSharedView = active;
+    if (editProfileBtn) {
+      editProfileBtn.style.display = active ? 'none' : '';
+    }
+    if (sharePortfolioBtn) {
+      sharePortfolioBtn.style.display = active ? 'none' : '';
+    }
+    const uploadLinks = document.querySelectorAll('#portfolioMain a[href="index.html"], #uploadDocBtn');
+    uploadLinks.forEach((el) => {
+      el.style.display = active ? 'none' : '';
+    });
+    if (sharedBanner) {
+      sharedBanner.style.display = active ? 'block' : 'none';
+    }
+    refreshIcons();
+  }
 
   function openEditProfileModal() {
+    if (isSharedView) {
+      return;
+    }
     const current = getSavedProfile();
     if (inputProfileName) {
       inputProfileName.value = current.nama;
@@ -1053,6 +1111,9 @@ function initPortofolioPage() {
   if (profileForm) {
     profileForm.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (isSharedView) {
+        return;
+      }
       const updated = saveProfileToStorage({
         nama: inputProfileName ? inputProfileName.value : DEFAULT_PROFILE.nama,
         jenjang: inputProfileLevel ? inputProfileLevel.value : DEFAULT_PROFILE.jenjang,
@@ -1062,6 +1123,40 @@ function initPortofolioPage() {
       applyProfileToDom(updated);
       closeEditProfileModal();
       showToast('Profil berhasil disimpan.');
+    });
+  }
+
+  if (sharePortfolioBtn) {
+    sharePortfolioBtn.addEventListener('click', async () => {
+      try {
+        const profile = getSavedProfile();
+        const records = await getAllDocuments();
+        const metadataList = records.map((item) => ({
+          judul: extractReadableTitle(item.fileName),
+          jenis: normalizeJenisLabel(item.jenis || item.kategori),
+          bidang: item.bidang || 'Akademik',
+          tahun: item.tahun || '2026'
+        }));
+
+        const payload = {
+          profil: {
+            nama: profile.nama,
+            jenjang: profile.jenjang,
+            instansi: profile.instansi,
+            bio: profile.bio
+          },
+          dokumen: metadataList
+        };
+
+        const encoded = encodeSharePayload(payload);
+        const baseUrl = window.location.href.split('#')[0];
+        const shareUrl = `${baseUrl}#share=${encoded}`;
+
+        await copyToClipboard(shareUrl);
+        showToast('Tautan portofolio berhasil disalin');
+      } catch (error) {
+        showToast('Gagal membuat tautan berbagi.');
+      }
     });
   }
 
@@ -1077,7 +1172,10 @@ function initPortofolioPage() {
       footer.style.display = active ? 'none' : '';
     }
     if (editProfileBtn) {
-      editProfileBtn.style.display = active ? 'none' : '';
+      editProfileBtn.style.display = active || isSharedView ? 'none' : '';
+    }
+    if (sharePortfolioBtn) {
+      sharePortfolioBtn.style.display = active || isSharedView ? 'none' : '';
     }
     if (presentationModeBtn) {
       presentationModeBtn.style.display = active ? 'none' : '';
@@ -1148,14 +1246,19 @@ function initPortofolioPage() {
     }
 
     if (!records || records.length === 0) {
-      showcaseGrid.innerHTML = `
-        <div class="empty-state">
-          <i data-lucide="award" width="36" height="36"></i>
-          <h3>Belum ada pencapaian tersimpan</h3>
+      const uploadActionHtml = isSharedView
+        ? ''
+        : `
           <a href="index.html" class="btn btn-primary">
             <i data-lucide="plus" width="18" height="18"></i>
             <span>Unggah Dokumen</span>
           </a>
+        `;
+      showcaseGrid.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="award" width="36" height="36"></i>
+          <h3>Belum ada pencapaian tersimpan</h3>
+          ${uploadActionHtml}
         </div>
       `;
       refreshIcons();
@@ -1172,7 +1275,8 @@ function initPortofolioPage() {
         }
 
         const jenisLabel = escapeHtml(normalizeJenisLabel(item.jenis || item.kategori));
-        const readableTitle = escapeHtml(extractReadableTitle(item.fileName));
+        const rawTitle = item.judul ? String(item.judul) : extractReadableTitle(item.fileName);
+        const readableTitle = escapeHtml(rawTitle);
         const safeBidang = escapeHtml(item.bidang || 'Akademik');
         const safeTahun = escapeHtml(item.tahun || '2026');
         const mime = item.mimeType || (item.fileBlob && item.fileBlob.type) || '';
@@ -1223,10 +1327,53 @@ function initPortofolioPage() {
     refreshIcons();
   }
 
-  getAllDocuments().then((records) => {
-    updatePortfolioStats(records);
-    renderShowcaseCards(records);
-  });
+  function loadPortfolioContent() {
+    const hash = window.location.hash || '';
+    if (hash.startsWith('#share=')) {
+      const encoded = hash.slice(7);
+      if (encoded) {
+        try {
+          const sharedData = decodeSharePayload(encoded);
+          if (sharedData && typeof sharedData === 'object') {
+            const sharedProfileRaw = sharedData.profil || {};
+            const sharedProfile = {
+              nama: sharedProfileRaw.nama ? String(sharedProfileRaw.nama) : DEFAULT_PROFILE.nama,
+              jenjang: sharedProfileRaw.jenjang ? String(sharedProfileRaw.jenjang) : DEFAULT_PROFILE.jenjang,
+              instansi: typeof sharedProfileRaw.instansi === 'string' ? sharedProfileRaw.instansi : '',
+              bio: sharedProfileRaw.bio ? String(sharedProfileRaw.bio) : DEFAULT_PROFILE.bio
+            };
+            const sharedDocs = Array.isArray(sharedData.dokumen)
+              ? sharedData.dokumen.map((doc) => ({
+                  judul: doc && doc.judul ? String(doc.judul) : 'Dokumen',
+                  jenis: normalizeJenisLabel(doc && doc.jenis),
+                  kategori: normalizeKategori(doc && doc.jenis),
+                  bidang: doc && doc.bidang ? String(doc.bidang) : 'Akademik',
+                  tahun: doc && doc.tahun ? String(doc.tahun) : '2026'
+                }))
+              : [];
+
+            applySharedModeUi(true);
+            applyProfileToDom(sharedProfile);
+            updatePortfolioStats(sharedDocs);
+            renderShowcaseCards(sharedDocs);
+            return;
+          }
+        } catch (error) {
+          showToast('Tautan portofolio tidak valid.');
+        }
+      }
+    }
+
+    applySharedModeUi(false);
+    applyProfileToDom(getSavedProfile());
+    getAllDocuments().then((records) => {
+      updatePortfolioStats(records);
+      renderShowcaseCards(records);
+    });
+  }
+
+  window.addEventListener('hashchange', loadPortfolioContent);
+  loadPortfolioContent();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
