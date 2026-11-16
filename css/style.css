@@ -36,6 +36,8 @@ html {
 
 body {
   background-color: var(--bg-floral);
+  background-image: radial-gradient(#E5DDD0 1px, transparent 1px);
+  background-size: 24px 24px;
   color: var(--text-shadow);
   font-family: var(--font-body);
   line-height: 1.6;
@@ -105,7 +107,7 @@ iframe {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(255, 248, 240, 0.88);
+  background-color: rgba(255, 248, 240, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-sand);
@@ -261,7 +263,7 @@ iframe {
 }
 
 .btn-accent:hover {
-  filter: brightness(0.96);
+  background-color: #F7C284;
 }
 
 .btn-sm {
@@ -275,6 +277,46 @@ iframe {
   height: 38px;
   padding: 0;
   border-radius: 10px;
+}
+
+.exit-fullscreen-btn,
+.btn-exit-fullscreen,
+.exit-presentation-btn,
+#exitPresentationBtn,
+#exitFullscreenBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background-color: var(--text-shadow);
+  color: var(--surface-white);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 10px 26px rgba(30, 30, 36, 0.22);
+  opacity: 0.15;
+  transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+}
+
+.exit-fullscreen-btn:hover,
+.exit-fullscreen-btn:focus-visible,
+.btn-exit-fullscreen:hover,
+.btn-exit-fullscreen:focus-visible,
+.exit-presentation-btn:hover,
+.exit-presentation-btn:focus-visible,
+#exitPresentationBtn:hover,
+#exitPresentationBtn:focus-visible,
+#exitFullscreenBtn:hover,
+#exitFullscreenBtn:focus-visible {
+  opacity: 1;
+  background-color: var(--accent-oxblood);
+  transform: translateY(-2px);
 }
 
 .pill-group {
@@ -601,10 +643,21 @@ iframe {
   height: 280px;
 }
 
-.bento-card-preview img {
+.bento-card-preview img,
+.bento-card-preview iframe {
   width: 100%;
-  height: 100%;
+  height: 180px;
+  border: none;
+  border-radius: 10px;
+}
+
+.bento-card-preview img {
   object-fit: cover;
+}
+
+.bento-card-preview iframe {
+  pointer-events: none;
+  background-color: var(--surface-white);
 }
 
 .bento-card-body {
@@ -889,9 +942,9 @@ textarea.form-control {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-shadow);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .empty-state {
@@ -1082,6 +1135,7 @@ textarea.form-control {
   html,
   body {
     background-color: #FFFFFF !important;
+    background-image: none !important;
     background: #FFFFFF !important;
     color: #1E1E24 !important;
     font-size: 10pt !important;
@@ -1119,6 +1173,11 @@ textarea.form-control {
   #editProfileBtn,
   #presentationModeBtn,
   #printPdfBtn,
+  .exit-fullscreen-btn,
+  .btn-exit-fullscreen,
+  .exit-presentation-btn,
+  #exitPresentationBtn,
+  #exitFullscreenBtn,
   .empty-state .btn,
   svg.lucide,
   [data-lucide],
@@ -1296,12 +1355,20 @@ textarea.form-control {
   }
 
   #showcaseGrid .bento-card-preview img,
-  .bento-card-preview img {
+  #showcaseGrid .bento-card-preview iframe,
+  .bento-card-preview img,
+  .bento-card-preview iframe {
     max-height: 94px !important;
-    width: auto !important;
+    height: 94px !important;
+    width: 100% !important;
     max-width: 100% !important;
-    object-fit: contain !important;
+    border-radius: 4px !important;
     margin: 0 auto !important;
+  }
+
+  #showcaseGrid .bento-card-preview img,
+  .bento-card-preview img {
+    object-fit: contain !important;
   }
 
   .bento-card-title,
