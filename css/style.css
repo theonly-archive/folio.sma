@@ -18,6 +18,17 @@
   --transition-smooth: all 0.2s ease;
 }
 
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -96,9 +107,11 @@ iframe {
   padding: 0 24px;
 }
 
+main,
 .main-content {
   flex: 1;
   padding: 40px 0 48px;
+  animation: fadeSlideUp 0.28s ease-out both;
 }
 
 .navbar {
@@ -139,7 +152,7 @@ iframe {
   justify-content: center;
   font-size: 0.9rem;
   font-weight: 800;
-  transition: var(--transition-smooth);
+  transition: background-color 0.15s ease;
 }
 
 .navbar-brand:hover .brand-badge {
@@ -167,7 +180,7 @@ iframe {
   font-size: 0.925rem;
   font-weight: 500;
   color: var(--text-stone);
-  transition: var(--transition-smooth);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .nav-link:hover {
@@ -202,6 +215,7 @@ iframe {
   align-items: center;
   justify-content: center;
   color: var(--text-shadow);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .nav-toggle:hover {
@@ -235,7 +249,14 @@ iframe {
   color: var(--text-stone);
 }
 
-.btn {
+button,
+.btn,
+a.btn {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+.btn,
+a.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -245,9 +266,18 @@ iframe {
   font-weight: 600;
   font-size: 0.925rem;
   line-height: 1.2;
-  transition: var(--transition-smooth);
   white-space: nowrap;
   box-shadow: none;
+}
+
+button:active,
+.btn:active,
+a.btn:active,
+.pill-btn:active,
+.nav-link:active,
+.modal-close:active,
+.nav-toggle:active {
+  transform: scale(0.97);
 }
 
 .btn-primary {
@@ -261,7 +291,6 @@ iframe {
   background-color: var(--accent-oxblood-hover);
   border-color: var(--accent-oxblood-hover);
   color: var(--surface-white);
-  transform: none;
   box-shadow: none;
 }
 
@@ -276,7 +305,6 @@ iframe {
   border-color: var(--text-shadow);
   color: var(--text-shadow);
   background-color: var(--surface-white);
-  transform: none;
   box-shadow: none;
 }
 
@@ -309,7 +337,6 @@ iframe {
   background-color: var(--accent-oxblood);
   border-color: var(--accent-oxblood);
   color: var(--surface-white);
-  transform: none;
 }
 
 .btn-sm {
@@ -348,7 +375,7 @@ iframe {
   font-weight: 600;
   box-shadow: none;
   opacity: 0.15;
-  transition: opacity 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+  transition: opacity 0.25s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
 .exit-fullscreen-btn:hover,
@@ -367,7 +394,6 @@ iframe {
   background-color: var(--accent-oxblood);
   border-color: var(--accent-oxblood);
   color: var(--surface-white);
-  transform: none;
 }
 
 .pill-group {
@@ -388,12 +414,12 @@ iframe {
   color: var(--text-stone);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
 .pill-btn:hover {
-  border-color: var(--accent-oxblood);
-  color: var(--accent-oxblood);
+  border-color: var(--text-shadow);
+  color: var(--text-shadow);
 }
 
 .pill-btn.active {
@@ -469,14 +495,13 @@ iframe {
   text-align: center;
   gap: 16px;
   cursor: pointer;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
 .drop-zone:hover,
 .drop-zone.drag-over {
   border-color: var(--accent-oxblood);
   background-color: var(--surface-white);
-  transform: none;
   box-shadow: none;
 }
 
@@ -490,13 +515,15 @@ iframe {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-smooth);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.drop-zone:hover .drop-zone-icon {
+.drop-zone:hover .drop-zone-icon,
+.drop-zone.drag-over .drop-zone-icon {
   background-color: var(--accent-oxblood);
   border-color: var(--accent-oxblood);
   color: var(--surface-white);
+  transform: translateY(-4px);
 }
 
 .drop-zone-title {
@@ -549,23 +576,21 @@ iframe {
   border-radius: var(--radius-card);
   padding: 20px 24px;
   box-shadow: none;
-  transition: var(--transition-smooth);
-}
-
-.stat-card:hover {
-  transform: none;
-  border-color: var(--accent-oxblood);
-  box-shadow: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .stat-card-highlight {
   background-color: var(--accent-apricot);
   border: 1px solid var(--accent-apricot-border);
   color: var(--text-shadow);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
+.stat-card:hover,
 .stat-card-highlight:hover {
   border-color: var(--text-shadow);
+  transform: translateY(-2px);
+  box-shadow: none;
 }
 
 .stat-value {
@@ -612,7 +637,7 @@ iframe {
   border-radius: var(--radius-pill);
   color: var(--text-shadow);
   box-shadow: none;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease;
 }
 
 .search-input:focus {
@@ -659,14 +684,14 @@ iframe {
   flex-direction: column;
   justify-content: space-between;
   gap: 18px;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
   overflow: hidden;
 }
 
 .bento-card:hover {
-  transform: none;
+  border-color: var(--text-shadow);
+  transform: translateY(-2px);
   box-shadow: none;
-  border-color: var(--accent-oxblood);
 }
 
 .bento-card.bento-wide {
@@ -873,7 +898,7 @@ iframe {
   padding: 20px;
   opacity: 0;
   visibility: hidden;
-  transition: var(--transition-smooth);
+  transition: opacity 0.22s ease-out, visibility 0.22s ease-out;
 }
 
 .modal-backdrop.is-open {
@@ -891,12 +916,14 @@ iframe {
   border-radius: var(--radius-card);
   box-shadow: none;
   padding: 28px;
-  transform: translateY(12px);
-  transition: var(--transition-smooth);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: transform 0.22s ease-out, opacity 0.22s ease-out;
 }
 
 .modal-backdrop.is-open .modal-window {
-  transform: translateY(0);
+  opacity: 1;
+  transform: scale(1);
 }
 
 .modal-header {
@@ -927,7 +954,7 @@ iframe {
   justify-content: center;
   font-size: 1.1rem;
   font-weight: 600;
-  transition: var(--transition-smooth);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .modal-close:hover {
@@ -978,7 +1005,7 @@ iframe {
   border-radius: var(--radius-control);
   color: var(--text-shadow);
   box-shadow: none;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .form-control:focus {
@@ -1025,7 +1052,7 @@ textarea.form-control {
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  transition: var(--transition-smooth);
+  transition: border-color 0.2s ease;
 }
 
 .empty-state:hover {
@@ -1047,7 +1074,7 @@ textarea.form-control {
   box-shadow: none;
   transform: translateY(100px);
   opacity: 0;
-  transition: var(--transition-smooth);
+  transition: transform 0.22s ease, opacity 0.22s ease;
 }
 
 .toast.show {
@@ -1107,6 +1134,7 @@ textarea.form-control {
     padding: 0 16px;
   }
 
+  main,
   .main-content {
     padding: 28px 0 40px;
   }
@@ -1237,11 +1265,13 @@ textarea.form-control {
     margin: 0 !important;
   }
 
+  main,
   .main-content,
   #portfolioMain {
     padding: 0 !important;
     margin: 0 !important;
     background-color: #FFFFFF !important;
+    animation: none !important;
   }
 
   .navbar,
