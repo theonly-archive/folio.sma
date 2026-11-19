@@ -21,7 +21,7 @@ Setelah konteks dan segala alurnya sudah diberikan, kami meminta Gemini menyusun
 Pada draf kode awal yang diberikan oleh AI, halaman daftar dokumen dan portofolio masih terisi oleh data contoh bawaan serta istilah-istilah yang terasa kaku (seperti Lemari Arsip dan Ekspor JSON) dan kalimat *marketing buzzwords* (ya, ciri khas AI sekali). Kami membersihkan seluruh data contoh tersebut agar website ini nantinya dimulai dalam keadaan kosong dari nol, lalu mengganti kosakata menjadi kata yang lebih dikenal dan mudah (seperti Dokumen, Simpan Dokumen, dan Cadangan Data).
 
 
-## Tahap 3: Penyempurnaan Antarmuka dan Fitur Tambahan
+## Tahap 3: Penyempurnaan UI dan Fitur Tambahan
 ### Interaksi dan Prompt Kami kepada AI
 Setelah kerangka dasar berjalan, kami kembali berdiskusi dengan Gemini untuk menyempurnakan pengalaman pengguna pada halaman portofolio. Kami meminta Gemini membantu merancang penggabungan tombol aksi ke dalam menu titik tiga (ketika dibuka di tampilan mobile), membuat mode pratinjau penuh, serta menyusun logika berbagi tautan portofolio melalui URL (tanpa server).
 
@@ -33,15 +33,22 @@ Setelah Gemini memberikan kode, Zalsha menyesuaikan kembali proporsi jarak ruang
 
 ## Tahap 4: Pemecahan Masalah
 ### Interaksi dan Prompt kepada AI
-Ketika menguji fitur cetak PDF pada halaman portofolio, kami menemukan kendala berupa kartu statistik keempat yang terpotong ke halaman berikutnya, tombol navigasi web ikut tercetak di kertas, serta nama file yang panjang tanpa spasi menabrak garis pinggir kartu. Kami memberikan intruksi ke Gemini untuk memperbarui aturan cetak pada file CSS agar tata letak kertas A4 menjadi bersih dan hemat tinta. Gemini memberikan penyesuaian pada blok media print untuk menyembunyikan tombol interaktif, mensejajarkan empat kartu statistik dalam satu baris mendatar, serta menambahkan aturan pemecah kata otomatis untuk teks panjang.
+Ketika menguji fitur cetak PDF pada halaman portofolio, kami menemukan kendala (bug) berupa kartu statistik keempat yang terpotong ke halaman berikutnya, tombol navigasi web ikut tercetak di kertas, serta nama file yang panjang tanpa spasi menabrak garis pinggir kartu. Kami memberikan intruksi ke Gemini untuk memperbarui aturan cetak pada file CSS agar tata letak kertas A4 menjadi bersih dan hemat tinta. Gemini memberikan penyesuaian pada blok media print (@media print) untuk menyembunyikan tombol interaktif, mensejajarkan empat kartu statistik dalam satu baris mendatar, serta menambahkan aturan pemecah kata otomatis untuk teks panjang.
 
 ### Validasi dan Modifikasi Mandiri
-Setelah memperbarui kode CSS di repositori GitHub, tampilan cetak sempat tidak berubah karena peramban masih menyimpan memori lama. Kami melakukan pembersihan cache melalui muat ulang paksa hingga seluruh halaman cetak berhasil muat secara utuh dalam satu lembar A4 secara presisi.
+Setelah memperbarui kode CSS di repositori GitHub, tampilan cetak sempat tidak berubah karena ternyata browser kami masih menyimpan memori lama. Kemudian kami melakukan pembersihan cache melalui muat ulang paksa (Ctrl+Shift+R) sampai seluruh halaman cetak berhasil muat secara utuh dalam satu lembar A4.
 
 
 ## Tahap 5 Refleksi dan Penjelasan Kode
 ### Pemahaman Alur Kerja Program
-Seluruh berkas sertifikat yang diunggah pengguna disimpan ke dalam database lokal peramban bernama FolioSmaDB menggunakan IndexedDB karena kapasitasnya jauh lebih besar dibanding LocalStorage untuk menampung file gambar maupun PDF, sedangkan data identitas pemilik disimpan melalui LocalStorage. Saat pengguna memilih tiga kategori pada jendela unggah, fungsi di dalam js/app.js menggabungkan pilihan tersebut menjadi format penamaan file standar sebelum menyimpannya ke database. Halaman portofolio kemudian membaca data dari database tersebut untuk menghitung jumlah pencapaian pada tiap kategori secara otomatis sekaligus menampilkan pratinjau visual dokumen secara langsung.
+Seluruh file sertifikat yang diunggah pengguna disimpan ke dalam database lokal bernama FolioSmaDB menggunakan IndexedDB (karena kapasitasnya jauh lebih besar dibanding LocalStorage untuk menampung file gambar maupun PDF menurut kami), sedangkan data identitas pemilik disimpan melalui LocalStorage. Saat pengguna memilih tiga kategori pada jendela unggah, fungsi di dalam js/app.js menggabungkan pilihan tersebut menjadi format penamaan file standar sebelum menyimpannya ke database. Halaman portofolio kemudian membaca data dari database tersebut untuk menghitung jumlah pencapaian pada tiap kategori secara otomatis sekaligus menampilkan pratinjau dokumen secara langsung.
+
+<img width="1917" height="1198" alt="Screenshot 2026-11-18 225841" src="https://github.com/user-attachments/assets/138cd75a-03be-4306-8b7e-132c44258ff6" />
 
 ### Validasi dan Modifikasi Mandiri
-Melalui proses pengembangan proyek ini, kami memahami bahwa kecerdasan artifisial sangat membantu mempercepat penyusunan struktur kode dan pencarian solusi galat, namun ketepatan antarmuka, kesesuaian alur kerja pengguna, serta kebersihan logika tetap bergantung pada verifikasi dan modifikasi mandiri yang kami lakukan pada setiap tahapnya.
+Seluruh pengembangan dasar untuk website telah selesai dan kami juga meminta testimoni dari teman-teman kami (9 orang) untuk menggunakan ini, dan mereka puas. Jadi, kami memahami bahwa kecerdasan buatan (AI) memang sangat membantu mempercepat penyusunan struktur kode dan pemecahan masalah (debugging). Namun, perihal ketepatan UI, kesesuaian alur kerja pengguna, serta kebersihan logika itu tetap bergantung pada verifikasi dan modifikasi mandiri yang kami lakukan pada setiap tahapnya.
+
+
+
+
+Pandu B.N. & Zalshabilla S.A.
