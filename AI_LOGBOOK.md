@@ -9,20 +9,14 @@ Kami mulai berdiskusi mengenai apa masalah sebenarnya yang dibutuhkan oleh pelaj
 Gemini merespons bahwa konsep tersebut sangat relevan dan bisa dilakukan sepenuhnya di GitHub Pages tanpa memerlukan server backend. Kemudian menyarankan kami menggunakan IndexedDB di dalam browser (file gambar maupun PDF tersimpan secara lokal di perangkat pengguna), serta mengusulkan pengkategorian (tiga klik) cepat setelah file dipilih agar pengguna tidak merasa terbebani.
 
 ### Validasi dan Modifikasi Mandiri
-Pada rancangan awal, kami sebenarnya sempat menamai aplikasi ini folio.smasa yang digunakan khusus bagi lingkungan sekolah kami. Namun, setelah kami memikirkan dan berdiskusi lebih lanjut mengenai penggunaan website ini secara luas, akhirnya kami memutuskan mengubah namanya menjadi folio.sma dan menghapus seluruh keterangan spesifik sekolah kami agar kedepannya bisa dipakai oleh pelajar SMA maupun SMK sederajat di mana saja. Kami juga menambahkan fitur unduh cadangan data serta fitur bagikan tautan (karena pengalaman kami, penyimpanan lokal di browser memang berisiko hilang jika pengguna membersihkan riwayat browsernya).
-
-
-
-
-
-
+Pada rancangan awal, kami sebenarnya sempat menamai aplikasi ini folio.smasa yang digunakan khusus bagi lingkungan sekolah kami. Namun, setelah kami memikirkan dan berdiskusi lebih lanjut mengenai penggunaan website ini secara luas, akhirnya kami memutuskan mengubah namanya menjadi folio.sma dan menghapus seluruh keterangan spesifik sekolah kami agar kedepannya bisa dipakai oleh pelajar SMA maupun SMK sederajat di mana saja. Kami juga menambahkan fitur unduh cadangan data serta fitur bagikan tautan (karena pengalaman kami, penyimpanan lokal di browser terkadang bisa hilang ketika pengguna membersihkan riwayat browsernya).
 
 ## Tahap 2 Penyusunan Kerangka Kode
 ### Interaksi dan Prompt Kami kepada AI
 Setelah konteks dan segala alurnya sudah diberikan, kami meminta Gemini menyusun kerangka kode yang terpisah ke dalam lima file (berisi index.html, arsip.html, portofolio.html, css/style.css, dan js/app.js). Kemudian, kami menetapkan palet warna dominan krem (#fff8f0) dan merah gelap (#92140c), melarang penggunaan emoji, menghapus gradasi dan bayangan, serta meminta keluaran kode murni tanpa keterangan penjelasan. Gemini kemudian menghasilkan kerangka tiga halaman HTML yang terhubung ke gaya CSS dan satu JavaScript.
 
 ### Validasi dan Modifikasi Mandiri
-Pada draf kode awal yang diberikan oleh AI, halaman daftar dokumen dan portofolio masih terisi oleh data contoh bawaan serta istilah-istilah yang terasa kaku seperti Lemari Arsip dan Ekspor JSON. Kami membersihkan seluruh data tiruan tersebut agar aplikasi dimulai dalam keadaan kosong dari nol, lalu mengganti kosakata antarmukanya menjadi kata yang lebih akrab seperti Dokumen, Simpan Dokumen, dan Cadangan Data.
+Pada draf kode awal yang diberikan oleh AI, halaman daftar dokumen dan portofolio masih terisi oleh data contoh bawaan serta istilah-istilah yang terasa kaku (seperti Lemari Arsip dan Ekspor JSON) dan kalimat *marketing buzzwords*. Kami membersihkan seluruh data tiruan tersebut agar aplikasi dimulai dalam keadaan kosong dari nol, lalu mengganti kosakata antarmukanya menjadi kata yang lebih akrab seperti Dokumen, Simpan Dokumen, dan Cadangan Data.
 
 ## Tahap 3 Penyempurnaan Antarmuka dan Fitur Tambahan
 
