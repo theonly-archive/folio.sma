@@ -27,6 +27,7 @@ Terhadap saran dan keluaran kode dari AI, kemudian kami melakukan beberapa penye
 4. **Susun & Bagikan Portofolio:** Buka menu **Portofolio** untuk melihat ringkasan statistik otomatis, mengatur identitas melalui **Edit Profil**, mencetak dokumen ke format kertas A4 melalui **Cetak PDF**, atau menyalin tautan publik portofolio lewat menu titik tiga (**Bagikan Tautan**).
 
 ## Identitas Pengembang
-* **Anggota 1:** Pandu Bittama Nurindra — Kelas 10 — SMA Negeri 1 Madiun
-* **Anggota 2:** Zalshabilla Skriva Alkhallifi — Kelas 10 — SMA Negeri 1 Madiun
-* **Kegiatan:** Pelatihan TIK bagi Murid (LATIKA) Tahun 2026 — Gelombang 4 Wilayah Kota Madiun
+* Pandu Bittama Nurindra (Pandu) — Kelas 10-10 — SMA Negeri 1 Madiun
+* Zalshabilla Skriva Alkhallifi (Zalsha) — Kelas 10-10 — SMA Negeri 1 Madiun
+
+**Kegiatan Pelatihan TIK bagi Murid (LATIKA) Tahun 2026 — Gelombang 4 Wilayah Kota Madiun**
