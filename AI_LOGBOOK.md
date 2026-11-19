@@ -45,7 +45,7 @@ Seluruh file yang diunggah pengguna disimpan ke dalam database lokal bernama Fol
 <img width="1917" height="1198" alt="Screenshot 2026-11-18 225841" src="https://github.com/user-attachments/assets/138cd75a-03be-4306-8b7e-132c44258ff6" />
 
 ### Validasi dan Modifikasi Mandiri
-Seluruh pengembangan dasar untuk website telah selesai dan kami juga meminta testimoni dari teman-teman kami (9 orang) untuk menggunakan ini, dan mereka puas. Jadi, kami memahami bahwa kecerdasan buatan (AI) memang sangat membantu mempercepat penyusunan struktur kode dan pemecahan masalah (debugging). Namun, perihal ketepatan UI, kesesuaian alur kerja pengguna, serta kebersihan logika itu tetap bergantung pada verifikasi dan modifikasi mandiri yang kami lakukan pada setiap tahapnya.
+Seluruh pengembangan dasar untuk website telah selesai, selain itu, kami juga meminta testimoni dari beberapa teman untuk menggunakan ini, dam hasilnya mereka puas dan bahkan terbantu. Jadi, kami memahami bahwa kecerdasan buatan (AI) memang sangat membantu mempercepat penyusunan struktur kode dan pemecahan masalah (debugging). Namun, perihal ketepatan UI, kesesuaian alur kerja pengguna, serta kebersihan logika itu tetap bergantung pada verifikasi dan modifikasi mandiri yang kami lakukan pada setiap tahapnya.
 
 
 
