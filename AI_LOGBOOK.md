@@ -32,7 +32,7 @@ Setelah Gemini memberikan kode, Zalsha menyesuaikan kembali proporsi jarak ruang
 
 
 ## Tahap 4: Pemecahan Masalah
-### Interaksi dan Prompt kepada AI
+### Interaksi dan Prompt Kami kepada AI
 Ketika menguji fitur cetak PDF pada halaman portofolio, kami menemukan kendala (bug) berupa kartu statistik keempat yang terpotong ke halaman berikutnya, tombol navigasi web ikut tercetak di kertas, serta nama file yang panjang tanpa spasi menabrak garis pinggir kartu. Kami memberikan intruksi ke Gemini untuk memperbarui aturan cetak pada file CSS agar tata letak kertas A4 menjadi bersih dan hemat tinta. Gemini memberikan penyesuaian pada blok media print (@media print) untuk menyembunyikan tombol interaktif, mensejajarkan empat kartu statistik dalam satu baris mendatar, serta menambahkan aturan pemecah kata otomatis untuk teks panjang.
 
 ### Validasi dan Modifikasi Mandiri
@@ -41,7 +41,7 @@ Setelah memperbarui kode CSS di repositori GitHub, tampilan cetak sempat tidak b
 
 ## Tahap 5 Refleksi dan Penjelasan Kode
 ### Pemahaman Alur Kerja Program
-Seluruh file sertifikat yang diunggah pengguna disimpan ke dalam database lokal bernama FolioSmaDB menggunakan IndexedDB (karena kapasitasnya jauh lebih besar dibanding LocalStorage untuk menampung file gambar maupun PDF menurut kami), sedangkan data identitas pemilik disimpan melalui LocalStorage. Saat pengguna memilih tiga kategori pada jendela unggah, fungsi di dalam js/app.js menggabungkan pilihan tersebut menjadi format penamaan file standar sebelum menyimpannya ke database. Halaman portofolio kemudian membaca data dari database tersebut untuk menghitung jumlah pencapaian pada tiap kategori secara otomatis sekaligus menampilkan pratinjau dokumen secara langsung.
+Seluruh file yang diunggah pengguna disimpan ke dalam database lokal bernama FolioSmaDB menggunakan IndexedDB (karena kapasitasnya jauh lebih besar dibanding LocalStorage untuk menampung file gambar maupun PDF menurut kami), sedangkan data identitas pemilik disimpan melalui LocalStorage. Saat pengguna memilih tiga kategori pada jendela unggah, fungsi di dalam js/app.js menggabungkan pilihan tersebut menjadi format penamaan file standar sebelum menyimpannya ke database. Halaman portofolio kemudian membaca data dari database tersebut untuk menghitung jumlah pencapaian pada tiap kategori secara otomatis sekaligus menampilkan pratinjau dokumen secara langsung.
 
 <img width="1917" height="1198" alt="Screenshot 2026-11-18 225841" src="https://github.com/user-attachments/assets/138cd75a-03be-4306-8b7e-132c44258ff6" />
 
