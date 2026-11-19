@@ -39,7 +39,7 @@ Ketika menguji fitur cetak PDF pada halaman portofolio, kami menemukan kendala (
 Setelah memperbarui kode CSS di repositori GitHub, tampilan cetak sempat tidak berubah karena ternyata browser kami masih menyimpan memori lama. Kemudian kami melakukan pembersihan cache melalui muat ulang paksa (Ctrl+Shift+R) sampai seluruh halaman cetak berhasil muat secara utuh dalam satu lembar A4.
 
 
-## Tahap 5 Refleksi dan Penjelasan Kode
+## Tahap 5: Refleksi dan Penjelasan Kode
 Seluruh file yang diunggah pengguna disimpan ke dalam database lokal bernama FolioSmaDB menggunakan IndexedDB (karena kapasitasnya jauh lebih besar dibanding LocalStorage untuk menampung file gambar maupun PDF menurut kami), sedangkan data identitas pemilik disimpan melalui LocalStorage. Saat pengguna memilih tiga kategori pada jendela unggah, fungsi di dalam js/app.js menggabungkan pilihan tersebut menjadi format penamaan file standar sebelum menyimpannya ke database. Halaman portofolio kemudian membaca data dari database tersebut untuk menghitung jumlah pencapaian pada tiap kategori secara otomatis sekaligus menampilkan pratinjau dokumen secara langsung.
 
 <img width="1917" height="1198" alt="Screenshot 2026-11-18 225841" src="https://github.com/user-attachments/assets/138cd75a-03be-4306-8b7e-132c44258ff6" />
